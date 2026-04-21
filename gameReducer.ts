@@ -1,6 +1,6 @@
-import { Card, GameState, Player } from './types';
+import { Card, ChatMessage, GameState, Player } from './types';
 import { createDeck, shuffleDeck } from './utils/deck';
-import { getRankLabel, SUIT_SYMBOLS, MAX_LOG_ENTRIES, EMPTY_SLOT_NAME, pickBotNames } from './constants';
+import { getRankLabel, SUIT_SYMBOLS, MAX_LOG_ENTRIES, CHAT_MAX_HISTORY, EMPTY_SLOT_NAME, pickBotNames } from './constants';
 import {
   SEEP_POINTS, WINNING_LEAD, NUM_PLAYERS,
   MIN_HOUSE_RANK,
@@ -26,7 +26,8 @@ export type Action =
       capturedHouseIds?: string[];
       buildRank?: number;
     }}
-  | { type: 'ADD_LOG'; payload: string };
+  | { type: 'ADD_LOG'; payload: string }
+  | { type: 'SEND_CHAT'; payload: ChatMessage };
 
 export const INITIAL_STATE: GameState = {
   gamePhase: 'LOBBY',
@@ -44,6 +45,7 @@ export const INITIAL_STATE: GameState = {
   totalScores: { team0: 0, team1: 0 },
   gameLog: [],
   seeps: { team0: 0, team1: 0 },
+  chatLog: [],
 };
 
 export function makeEmptyPlayer(id: number, name: string, isHuman: boolean, peerId?: string): Player {
@@ -56,7 +58,8 @@ export const isValidGameState = (s: any): s is GameState =>
 export const gameReducer = (state: GameState, action: Action): GameState => {
   switch (action.type) {
     case 'SET_GAME_STATE':
-      return isValidGameState(action.payload) ? action.payload : state;
+      if (!isValidGameState(action.payload)) return state;
+      return { ...action.payload, chatLog: action.payload.chatLog ?? [] };
 
     case 'INIT_LOBBY':
       return {
@@ -426,6 +429,9 @@ export const gameReducer = (state: GameState, action: Action): GameState => {
 
     case 'ADD_LOG':
       return { ...state, gameLog: [...state.gameLog, action.payload].slice(-MAX_LOG_ENTRIES) };
+
+    case 'SEND_CHAT':
+      return { ...state, chatLog: [...state.chatLog, action.payload].slice(-CHAT_MAX_HISTORY) };
 
     default:
       return state;
