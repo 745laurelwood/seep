@@ -120,25 +120,24 @@ export const MobileView: React.FC = () => {
 
   const chatEnabled = !!state.roomId && state.players.some(p => p.isHuman && p.id !== myIndex);
 
-  // Track the actual visual viewport height and pin .m-phone to it. iOS Safari's
-  // 100dvh sometimes fails to expand back to full size after the keyboard dismisses,
-  // leaving the game layout compressed with dead space at the bottom. Driving the
-  // height from window.visualViewport.height sidesteps that bug entirely.
+  // Pin .m-phone's height to window.innerHeight (the LAYOUT viewport). On iOS,
+  // the keyboard shrinks the VISUAL viewport but leaves the layout viewport
+  // stable — so window.innerHeight doesn't jitter when the keyboard opens or
+  // closes, avoiding 100dvh's post-keyboard shrink-and-never-restore bug.
   useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
     const apply = () => {
       const phone = document.querySelector('.m-phone') as HTMLElement | null;
       if (!phone) return;
-      phone.style.height = `${vv.height}px`;
-      phone.style.maxHeight = `${vv.height}px`;
+      const h = window.innerHeight;
+      phone.style.height = `${h}px`;
+      phone.style.maxHeight = `${h}px`;
     };
     apply();
-    vv.addEventListener('resize', apply);
-    vv.addEventListener('scroll', apply);
+    window.addEventListener('resize', apply);
+    window.addEventListener('orientationchange', apply);
     return () => {
-      vv.removeEventListener('resize', apply);
-      vv.removeEventListener('scroll', apply);
+      window.removeEventListener('resize', apply);
+      window.removeEventListener('orientationchange', apply);
       const phone = document.querySelector('.m-phone') as HTMLElement | null;
       if (phone) {
         phone.style.height = '';
