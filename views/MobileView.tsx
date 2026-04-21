@@ -120,15 +120,37 @@ export const MobileView: React.FC = () => {
 
   const chatEnabled = !!state.roomId && state.players.some(p => p.isHuman && p.id !== myIndex);
 
+  // Track the actual visual viewport height and pin .m-phone to it. iOS Safari's
+  // 100dvh sometimes fails to expand back to full size after the keyboard dismisses,
+  // leaving the game layout compressed with dead space at the bottom. Driving the
+  // height from window.visualViewport.height sidesteps that bug entirely.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const apply = () => {
+      const phone = document.querySelector('.m-phone') as HTMLElement | null;
+      if (!phone) return;
+      phone.style.height = `${vv.height}px`;
+      phone.style.maxHeight = `${vv.height}px`;
+    };
+    apply();
+    vv.addEventListener('resize', apply);
+    vv.addEventListener('scroll', apply);
+    return () => {
+      vv.removeEventListener('resize', apply);
+      vv.removeEventListener('scroll', apply);
+      const phone = document.querySelector('.m-phone') as HTMLElement | null;
+      if (phone) {
+        phone.style.height = '';
+        phone.style.maxHeight = '';
+      }
+    };
+  }, []);
+
   const closeChat = () => {
-    // Blur any focused input first so iOS Safari dismisses the keyboard
-    // and restores 100dvh cleanly before we unmount the sheet.
     const el = document.activeElement;
     if (el instanceof HTMLElement) el.blur();
     setMobileChatOpen(false);
-    // Nudge iOS into recomputing the visual viewport — without this, the
-    // page stays sized as if the keyboard were still up.
-    requestAnimationFrame(() => window.scrollTo(0, 0));
   };
 
   const isBidderMobile = state.gamePhase === 'BIDDING' && state.bidderIndex === myIndex;
