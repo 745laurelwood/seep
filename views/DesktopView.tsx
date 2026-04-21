@@ -14,6 +14,8 @@ export const DesktopView: React.FC = () => {
     chatUnread, markChatRead, sendChat,
   } = useGame();
 
+  const chatEnabled = !!state.roomId && state.players.some(p => p.isHuman && p.id !== myIndex);
+
   return (
     <>
       <div className="game-grid royal-bg relative">
@@ -64,7 +66,7 @@ export const DesktopView: React.FC = () => {
           {bottomPlayer !== -1 && <PlayerHand playerIndex={bottomPlayer} position="bottom" />}
         </div>
 
-        {isMultiplayer && (
+        {chatEnabled && (
           <div
             className="fixed right-0 flex justify-end p-2 sm:p-3 pointer-events-none"
             style={{ zIndex: Z_HUD, bottom: 'var(--safe-b)' }}

@@ -113,6 +113,8 @@ export const MobileView: React.FC = () => {
     executeAction, executeBid, canBid, bidReason, showSeepAnim,
   } = useGame();
 
+  const chatEnabled = !!state.roomId && state.players.some(p => p.isHuman && p.id !== myIndex);
+
   const isBidderMobile = state.gamePhase === 'BIDDING' && state.bidderIndex === myIndex;
 
   const sweepTarget = sweepingToPlayer !== null && visualThrow
@@ -256,7 +258,7 @@ export const MobileView: React.FC = () => {
               )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              {isMultiplayer && (
+              {chatEnabled && (
                 <button
                   className="log-btn"
                   onClick={() => { setMobileChatOpen(true); markChatRead(); }}
@@ -374,7 +376,7 @@ export const MobileView: React.FC = () => {
           </>
         )}
 
-        {mobileChatOpen && isMultiplayer && (
+        {mobileChatOpen && chatEnabled && (
           <>
             <div className="m-sheet-backdrop" onClick={() => setMobileChatOpen(false)} />
             <div className="m-sheet" style={{ maxHeight: '75dvh' }}>
