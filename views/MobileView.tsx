@@ -73,6 +73,11 @@ function MobileChatBody({ messages, myIndex, onSend }: {
           onChange={(e) => setDraft(e.target.value)}
           maxLength={CHAT_MAX_LEN}
           placeholder="Type a message…"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="sentences"
+          spellCheck={false}
+          name="seep-chat-input"
           style={{
             flex: 1, minWidth: 0, background: 'transparent',
             border: '1px solid var(--line)', borderRadius: 999,

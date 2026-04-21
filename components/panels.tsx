@@ -421,6 +421,11 @@ export function ChatRoom({ messages, myIndex, unread, onOpen, onClose, onSend }:
           onChange={(e) => setDraft(e.target.value)}
           maxLength={CHAT_MAX_LEN}
           placeholder="Type a message…"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="sentences"
+          spellCheck={false}
+          name="seep-chat-input"
           className="flex-1 bg-transparent outline-none text-[13px]"
           style={{ color: 'var(--fg)' }}
         />
