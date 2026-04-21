@@ -115,6 +115,17 @@ export const MobileView: React.FC = () => {
 
   const chatEnabled = !!state.roomId && state.players.some(p => p.isHuman && p.id !== myIndex);
 
+  const closeChat = () => {
+    // Blur any focused input first so iOS Safari dismisses the keyboard
+    // and restores 100dvh cleanly before we unmount the sheet.
+    const el = document.activeElement;
+    if (el instanceof HTMLElement) el.blur();
+    setMobileChatOpen(false);
+    // Nudge iOS into recomputing the visual viewport — without this, the
+    // page stays sized as if the keyboard were still up.
+    requestAnimationFrame(() => window.scrollTo(0, 0));
+  };
+
   const isBidderMobile = state.gamePhase === 'BIDDING' && state.bidderIndex === myIndex;
 
   const sweepTarget = sweepingToPlayer !== null && visualThrow
@@ -378,13 +389,13 @@ export const MobileView: React.FC = () => {
 
         {mobileChatOpen && chatEnabled && (
           <>
-            <div className="m-sheet-backdrop" onClick={() => setMobileChatOpen(false)} />
+            <div className="m-sheet-backdrop" onClick={closeChat} />
             <div className="m-sheet" style={{ maxHeight: '75dvh', paddingBottom: 'calc(var(--safe-b) + 6px)' }}>
               <div className="m-sheet-handle" />
               <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, fontFamily: 'Fredoka', fontSize: 15, fontWeight: 500, color: 'var(--fg)' }}>
                 Chat
                 <button
-                  onClick={() => setMobileChatOpen(false)}
+                  onClick={closeChat}
                   style={{ fontSize: 12, color: 'var(--dim)', padding: '4px 10px', borderRadius: 999, background: 'var(--bg-2)' }}
                 >
                   Close
