@@ -73,6 +73,7 @@ function MobileChatBody({ messages, myIndex, onSend }: {
           onChange={(e) => setDraft(e.target.value)}
           maxLength={CHAT_MAX_LEN}
           placeholder="Type a message…"
+          autoFocus
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="sentences"

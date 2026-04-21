@@ -313,6 +313,7 @@ export function ChatRoom({ messages, myIndex, unread, onOpen, onClose, onSend }:
   const [isExpanded, setIsExpanded] = useState(false);
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const latest = messages[messages.length - 1];
 
   useEffect(() => {
@@ -321,6 +322,10 @@ export function ChatRoom({ messages, myIndex, unread, onOpen, onClose, onSend }:
     // While expanded, treat new messages as read immediately.
     onOpen();
   }, [messages, isExpanded, onOpen]);
+
+  useEffect(() => {
+    if (isExpanded) inputRef.current?.focus();
+  }, [isExpanded]);
 
   const expand = () => { setIsExpanded(true); onOpen(); };
   const collapse = () => { setIsExpanded(false); onClose(); };
@@ -416,6 +421,7 @@ export function ChatRoom({ messages, myIndex, unread, onOpen, onClose, onSend }:
         style={{ borderTop: '1px solid var(--line)' }}
       >
         <input
+          ref={inputRef}
           type="text"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
