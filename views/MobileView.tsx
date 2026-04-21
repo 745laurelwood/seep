@@ -74,9 +74,9 @@ function MobileChatBody({ messages, myIndex, onSend }: {
           maxLength={CHAT_MAX_LEN}
           placeholder="Type a message…"
           style={{
-            flex: 1, background: 'transparent',
+            flex: 1, minWidth: 0, background: 'transparent',
             border: '1px solid var(--line)', borderRadius: 999,
-            padding: '8px 12px', fontSize: 13, color: 'var(--fg)',
+            padding: '8px 12px', fontSize: 16, color: 'var(--fg)',
             outline: 'none',
           }}
         />
