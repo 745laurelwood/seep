@@ -360,7 +360,7 @@ export function ChatRoom({ messages, myIndex, unread, onOpen, onClose, onSend }:
   return (
     <div
       className="glass-panel rounded-2xl flex flex-col w-[min(90vw,440px)]"
-      style={{ zIndex: Z_HUD, color: 'var(--fg)' }}
+      style={{ zIndex: Z_HUD, color: 'var(--fg)', background: 'rgba(38, 46, 58, 0.88)' }}
     >
       <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--line)' }}>
         <span className="text-sm uppercase tracking-[0.14em] font-semibold" style={{ color: 'var(--accent)' }}>Chat</span>
