@@ -360,7 +360,7 @@ export function ChatRoom({ messages, myIndex, unread, onOpen, onClose, onSend }:
   return (
     <div
       className="glass-panel rounded-2xl flex flex-col w-[min(90vw,440px)]"
-      style={{ zIndex: Z_HUD, color: 'var(--fg)', background: 'rgba(38, 46, 58, 0.88)' }}
+      style={{ zIndex: Z_HUD, color: 'var(--fg)' }}
     >
       <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--line)' }}>
         <span className="text-sm uppercase tracking-[0.14em] font-semibold" style={{ color: 'var(--accent)' }}>Chat</span>
@@ -398,7 +398,7 @@ export function ChatRoom({ messages, myIndex, unread, onOpen, onClose, onSend }:
                 <span
                   className="text-[15px] leading-snug px-3 py-1.5 rounded-xl max-w-[85%] break-words whitespace-pre-wrap"
                   style={{
-                    background: mine ? 'var(--bg-2)' : 'var(--bg-1)',
+                    background: mine ? 'rgba(46, 72, 108, 0.9)' : 'rgba(28, 48, 74, 0.9)',
                     border: '1px solid var(--line-soft)',
                     color: 'var(--fg)',
                   }}

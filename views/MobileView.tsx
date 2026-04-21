@@ -52,7 +52,7 @@ function MobileChatBody({ messages, myIndex, onSend }: {
                   maxWidth: '85%',
                   wordBreak: 'break-word',
                   whiteSpace: 'pre-wrap',
-                  background: mine ? 'var(--bg-2)' : 'var(--bg-1)',
+                  background: mine ? 'rgba(46, 72, 108, 0.9)' : 'rgba(28, 48, 74, 0.9)',
                   border: '1px solid var(--line-soft)',
                   color: 'var(--fg)',
                 }}
