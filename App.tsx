@@ -335,7 +335,7 @@ export default function App() {
   };
 
   const joinGame = (resume?: Extract<SavedSession, { role: 'client' }>) => {
-    const roomId = resume?.roomId ?? joinId;
+    const roomId = (resume?.roomId ?? joinId).toUpperCase();
     const name = resume?.playerName ?? playerName;
     if (!roomId) return;
     if (resume && !joinId) setJoinId(roomId);

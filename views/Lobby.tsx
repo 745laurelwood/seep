@@ -129,9 +129,13 @@ export const Lobby: React.FC<LobbyProps> = ({
                 type="text"
                 placeholder="Room ID"
                 value={joinId}
-                onChange={e => setJoinId(e.target.value)}
+                onChange={e => setJoinId(e.target.value.toUpperCase())}
+                autoCapitalize="characters"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
                 className="flex-1 rounded-xl px-4 py-3 text-center focus:outline-none font-semibold transition-all"
-                style={inputStyle}
+                style={{ ...inputStyle, textTransform: 'uppercase' }}
               />
               <button
                 onClick={() => onJoinRoom()}
