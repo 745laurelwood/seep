@@ -1,18 +1,113 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CardComponent } from '../components/CardComponent';
 import { ActionBar, LastMoveBanner, SeepOverlay } from '../components/panels';
 import { FeltContent } from '../components/FeltContent';
 import { SharedOverlays } from '../components/SharedOverlays';
 import { useGame } from '../GameContext';
 import { getPointsForCard } from '../rules';
+import { ChatMessage } from '../types';
+import { CHAT_MAX_LEN } from '../constants';
+
+function MobileChatBody({ messages, myIndex, onSend }: {
+  messages: ChatMessage[];
+  myIndex: number;
+  onSend: (text: string) => void;
+}) {
+  const [draft, setDraft] = useState('');
+  const listRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
+  }, [messages.length]);
+
+  const submit = () => {
+    const text = draft.trim();
+    if (!text) return;
+    onSend(text);
+    setDraft('');
+  };
+
+  return (
+    <>
+      <div
+        ref={listRef}
+        style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6, paddingBottom: 8 }}
+      >
+        {messages.length === 0 && (
+          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--dim)', fontSize: 13 }}>No messages yet. Say hi!</div>
+        )}
+        {messages.map((m) => {
+          const mine = m.playerIndex === myIndex;
+          const nameColor = m.team === 0 ? 'var(--accent)' : 'var(--red)';
+          return (
+            <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: mine ? 'flex-end' : 'flex-start' }}>
+              <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: nameColor }}>
+                {mine ? 'You' : m.name}
+              </span>
+              <span
+                style={{
+                  fontSize: 13, lineHeight: 1.35,
+                  padding: '5px 10px',
+                  borderRadius: 12,
+                  maxWidth: '85%',
+                  wordBreak: 'break-word',
+                  whiteSpace: 'pre-wrap',
+                  background: mine ? 'var(--bg-2)' : 'var(--bg-1)',
+                  border: '1px solid var(--line-soft)',
+                  color: 'var(--fg)',
+                }}
+              >
+                {m.text}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <form
+        onSubmit={(e) => { e.preventDefault(); submit(); }}
+        style={{ display: 'flex', gap: 8, alignItems: 'center', paddingTop: 8, borderTop: '1px solid var(--line)' }}
+      >
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          maxLength={CHAT_MAX_LEN}
+          placeholder="Type a message…"
+          style={{
+            flex: 1, background: 'transparent',
+            border: '1px solid var(--line)', borderRadius: 999,
+            padding: '8px 12px', fontSize: 13, color: 'var(--fg)',
+            outline: 'none',
+          }}
+        />
+        <button
+          type="submit"
+          disabled={!draft.trim()}
+          style={{
+            fontSize: 12, fontWeight: 700,
+            padding: '8px 14px', borderRadius: 999,
+            background: draft.trim() ? 'var(--accent)' : 'var(--bg-2)',
+            color: draft.trim() ? '#06121f' : 'var(--dimmer)',
+            border: '1px solid var(--line)',
+            cursor: draft.trim() ? 'pointer' : 'not-allowed',
+          }}
+        >
+          Send
+        </button>
+      </form>
+    </>
+  );
+}
 
 export const MobileView: React.FC = () => {
   const {
-    state, myIndex,
+    state, myIndex, isMultiplayer,
     topPlayer, rightPlayer, leftPlayer, bottomPlayer,
     selectedCardId, setSelectedCardId,
     setShowMyCaptures,
     mobileLogOpen, setMobileLogOpen,
+    mobileChatOpen, setMobileChatOpen,
+    chatUnread, markChatRead, sendChat,
     visualThrow, sweepingToPlayer, mobileOpponentSource,
     canThrow, canCapture, canBuild, buildTarget, actionReasons,
     executeAction, executeBid, canBid, bidReason, showSeepAnim,
@@ -160,10 +255,43 @@ export const MobileView: React.FC = () => {
                 </button>
               )}
             </div>
-            <button className="log-btn" onClick={() => setMobileLogOpen(true)}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
-              Log
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              {isMultiplayer && (
+                <button
+                  className="log-btn"
+                  onClick={() => { setMobileChatOpen(true); markChatRead(); }}
+                  style={{ position: 'relative' }}
+                  aria-label="Open chat"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  Chat
+                  {chatUnread > 0 && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: -4, right: -4,
+                        minWidth: 16, height: 16,
+                        padding: '0 4px',
+                        borderRadius: 999,
+                        background: 'var(--accent)',
+                        color: '#06121f',
+                        fontSize: 10, fontWeight: 700,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        lineHeight: 1,
+                      }}
+                    >
+                      {chatUnread > 99 ? '99+' : chatUnread}
+                    </span>
+                  )}
+                </button>
+              )}
+              <button className="log-btn" onClick={() => setMobileLogOpen(true)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                Log
+              </button>
+            </div>
           </div>
         )}
 
@@ -242,6 +370,29 @@ export const MobileView: React.FC = () => {
                   <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--dim)', fontSize: 13 }}>No events yet.</div>
                 )}
               </div>
+            </div>
+          </>
+        )}
+
+        {mobileChatOpen && isMultiplayer && (
+          <>
+            <div className="m-sheet-backdrop" onClick={() => setMobileChatOpen(false)} />
+            <div className="m-sheet" style={{ maxHeight: '75dvh' }}>
+              <div className="m-sheet-handle" />
+              <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, fontFamily: 'Fredoka', fontSize: 15, fontWeight: 500, color: 'var(--fg)' }}>
+                Chat
+                <button
+                  onClick={() => setMobileChatOpen(false)}
+                  style={{ fontSize: 12, color: 'var(--dim)', padding: '4px 10px', borderRadius: 999, background: 'var(--bg-2)' }}
+                >
+                  Close
+                </button>
+              </h3>
+              <MobileChatBody
+                messages={state.chatLog ?? []}
+                myIndex={myIndex}
+                onSend={sendChat}
+              />
             </div>
           </>
         )}

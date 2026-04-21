@@ -1,5 +1,5 @@
 import React from 'react';
-import { HUD, GameLog, LastMoveBanner, SeepOverlay } from '../components/panels';
+import { HUD, GameLog, LastMoveBanner, SeepOverlay, ChatRoom } from '../components/panels';
 import { FeltContent } from '../components/FeltContent';
 import { PlayerHand } from '../components/PlayerHand';
 import { SharedOverlays } from '../components/SharedOverlays';
@@ -8,9 +8,10 @@ import { Z_HUD } from '../constants';
 
 export const DesktopView: React.FC = () => {
   const {
-    state, isMultiplayer,
+    state, isMultiplayer, myIndex,
     topPlayer, leftPlayer, rightPlayer, bottomPlayer,
     logEndRef, showSeepAnim,
+    chatUnread, markChatRead, sendChat,
   } = useGame();
 
   return (
@@ -62,6 +63,24 @@ export const DesktopView: React.FC = () => {
         <div className="game-area-bottom flex items-end justify-center pt-3 sm:pt-4 pb-4 sm:pb-6">
           {bottomPlayer !== -1 && <PlayerHand playerIndex={bottomPlayer} position="bottom" />}
         </div>
+
+        {isMultiplayer && (
+          <div
+            className="fixed right-0 flex justify-end p-2 sm:p-3 pointer-events-none"
+            style={{ zIndex: Z_HUD, bottom: 'var(--safe-b)' }}
+          >
+            <div className="pointer-events-auto">
+              <ChatRoom
+                messages={state.chatLog ?? []}
+                myIndex={myIndex}
+                unread={chatUnread}
+                onOpen={markChatRead}
+                onClose={() => { /* unread only grows while closed */ }}
+                onSend={sendChat}
+              />
+            </div>
+          </div>
+        )}
       </div>
       <SharedOverlays />
     </>

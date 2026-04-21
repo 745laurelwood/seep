@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useReducer, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import mqtt from 'mqtt';
-import { Card, GameState, House, Suit } from './types';
+import { Card, ChatMessage, GameState, House, Suit } from './types';
 import { findSumCombinations, getPossibleMoves, canCaptureWithRank, canPerfectlyPartition } from './utils/gameLogic';
 import { sounds } from './utils/sound';
 import { flipTransition } from './utils/flip';
@@ -9,7 +9,7 @@ import { loadSession, saveSession, clearSession, SavedSession } from './utils/se
 import {
   getRankLabel,
   SEEP_ANIM_DURATION_MS, AI_BID_DELAY_MS, AI_PLAY_DELAY_MS, RESHUFFLE_DELAY_MS,
-  EMPTY_SLOT_NAME,
+  EMPTY_SLOT_NAME, CHAT_MAX_LEN,
 } from './constants';
 import {
   NUM_PLAYERS,
@@ -53,6 +53,9 @@ export default function App() {
     return () => mq.removeEventListener('change', handler);
   }, []);
   const [mobileLogOpen, setMobileLogOpen] = useState(false);
+  const [mobileChatOpen, setMobileChatOpen] = useState(false);
+  const [chatUnread, setChatUnread] = useState(0);
+  const lastSeenChatLenRef = useRef(0);
 
   // Networking state
   const [isMultiplayer, setIsMultiplayer] = useState(false);
@@ -155,6 +158,22 @@ export default function App() {
       window.removeEventListener('pageshow', onVis);
     };
   }, [isMultiplayer, isHost]);
+
+  // ── Chat unread tracking ──
+  // Increment when chatLog grows while chat is closed; reset on open.
+  useEffect(() => {
+    const len = state.chatLog?.length ?? 0;
+    const prev = lastSeenChatLenRef.current;
+    if (len > prev) {
+      if (isMobile && mobileChatOpen) {
+        lastSeenChatLenRef.current = len;
+      } else {
+        setChatUnread(u => u + (len - prev));
+      }
+    } else if (len < prev) {
+      lastSeenChatLenRef.current = len;
+    }
+  }, [state.chatLog, isMobile, mobileChatOpen]);
 
   // ── Auto-save host session on every state change ──
   useEffect(() => {
@@ -819,6 +838,29 @@ export default function App() {
     }
   };
 
+  // ── Chat helpers ──
+  const markChatRead = () => {
+    lastSeenChatLenRef.current = state.chatLog?.length ?? 0;
+    setChatUnread(0);
+  };
+
+  const sendChat = (text: string) => {
+    if (!isMultiplayer) return;
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const me = state.players[myIndex];
+    if (!me) return;
+    const msg: ChatMessage = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      playerIndex: myIndex,
+      name: me.name,
+      team: me.team,
+      text: trimmed.slice(0, CHAT_MAX_LEN),
+      ts: Date.now(),
+    };
+    handleDispatch({ type: 'SEND_CHAT', payload: msg });
+  };
+
   // ── Human move execution ──
   const executeAction = (type: 'CAPTURE' | 'THROW' | 'BUILD') => {
     if (!selectedCardId) return;
@@ -1121,6 +1163,8 @@ export default function App() {
     previewHouseId, setPreviewHouseId,
     showMyCaptures, setShowMyCaptures,
     mobileLogOpen, setMobileLogOpen,
+    mobileChatOpen, setMobileChatOpen,
+    chatUnread, markChatRead, sendChat,
     visualThrow, visualCapturePile, sweepingToPlayer, mobileOpponentSource,
     showSeepAnim,
     canThrow, canCapture, canBuild, buildTarget, actionReasons,
