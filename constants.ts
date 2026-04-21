@@ -106,6 +106,12 @@ export const TEAM_TEXT_COLORS: Record<0 | 1, string> = {
 /** Maximum number of game log entries kept visible */
 export const MAX_LOG_ENTRIES = 50;
 
+/** Maximum length of a single chat message. */
+export const CHAT_MAX_LEN = 200;
+
+/** Maximum number of chat messages kept in the game state. */
+export const CHAT_MAX_HISTORY = 100;
+
 /** How many characters of a peer ID to show in the UI */
 export const PEER_ID_DISPLAY_LENGTH = 6;
 

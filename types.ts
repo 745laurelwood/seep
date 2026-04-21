@@ -19,6 +19,15 @@ export interface House {
   isCemented: boolean; // True once the house's cards sum to ≥ 2× its rank.
 }
 
+export interface ChatMessage {
+  id: string;          // unique id: `${ts}-${random}`
+  playerIndex: number; // player's index at send time
+  name: string;        // snapshot of sender's name
+  team: 0 | 1;         // snapshot of sender's team, for tint
+  text: string;        // trimmed, <= CHAT_MAX_LEN chars
+  ts: number;          // Date.now() at send
+}
+
 export interface Player {
   id: number;
   name: string;
@@ -55,6 +64,7 @@ export interface GameState {
     team1: number;
   };
   gameLog: string[];
+  chatLog: ChatMessage[];
   seeps: {
     team0: number;
     team1: number;
