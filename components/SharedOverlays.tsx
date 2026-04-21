@@ -118,8 +118,15 @@ export const SharedOverlays: React.FC = () => {
 
 
       {isPaused && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}>
-          <div className="glass-panel p-6 sm:p-9 rounded-2xl max-w-md w-full text-center animate-pulse" style={{ border: '1px solid rgba(232,146,154,0.25)' }}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.78)' }}>
+          <div
+            className="p-6 sm:p-9 rounded-2xl max-w-md w-full text-center"
+            style={{
+              background: 'var(--bg-1)',
+              border: '1px solid rgba(232,146,154,0.25)',
+              boxShadow: '0 8px 28px rgba(0, 0, 0, 0.45)',
+            }}
+          >
             <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 opacity-80">
               <svg className="w-full h-full" style={{ color: 'var(--red)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -137,7 +144,7 @@ export const SharedOverlays: React.FC = () => {
             )}
             <div className="flex gap-4 justify-center">
               <div
-                className="px-5 py-1.5 rounded-full tracking-[0.14em] text-xs font-semibold"
+                className="animate-pulse px-5 py-1.5 rounded-full tracking-[0.14em] text-xs font-semibold"
                 style={{ background: 'rgba(232,146,154,0.08)', border: '1px solid rgba(232,146,154,0.3)', color: 'var(--red)' }}
               >
                 GAME PAUSED
