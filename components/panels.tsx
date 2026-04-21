@@ -337,11 +337,11 @@ export function ChatRoom({ messages, myIndex, unread, onOpen, onClose, onSend }:
       <button
         onClick={expand}
         title="Open chat"
-        className="pill-chip pl-3 pr-2 py-1.5 flex items-center gap-2 hover:bg-[color:var(--bg-2)] transition-colors max-w-[min(55vw,320px)] relative"
+        className="pill-chip pl-3 pr-2 py-2 flex items-center gap-2 hover:bg-[color:var(--bg-2)] transition-colors max-w-[min(60vw,360px)] relative"
         style={{ zIndex: Z_HUD, color: 'var(--fg-soft)' }}
       >
-        <span className="text-[10px] uppercase tracking-[0.14em] shrink-0 font-bold" style={{ color: 'var(--accent)' }}>Chat</span>
-        <span className="text-xs truncate">{previewText}</span>
+        <span className="text-[11px] uppercase tracking-[0.14em] shrink-0 font-bold" style={{ color: 'var(--accent)' }}>Chat</span>
+        <span className="text-sm truncate">{previewText}</span>
         {unread > 0 && (
           <span
             className="inline-flex items-center justify-center rounded-full text-[10px] font-bold shrink-0 px-1.5"
@@ -359,11 +359,11 @@ export function ChatRoom({ messages, myIndex, unread, onOpen, onClose, onSend }:
 
   return (
     <div
-      className="glass-panel rounded-2xl flex flex-col w-[min(90vw,380px)]"
+      className="glass-panel rounded-2xl flex flex-col w-[min(90vw,440px)]"
       style={{ zIndex: Z_HUD, color: 'var(--fg)' }}
     >
-      <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: '1px solid var(--line)' }}>
-        <span className="text-xs uppercase tracking-[0.14em] font-semibold" style={{ color: 'var(--accent)' }}>Chat</span>
+      <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--line)' }}>
+        <span className="text-sm uppercase tracking-[0.14em] font-semibold" style={{ color: 'var(--accent)' }}>Chat</span>
         <button
           onClick={collapse}
           title="Collapse"
@@ -377,12 +377,12 @@ export function ChatRoom({ messages, myIndex, unread, onOpen, onClose, onSend }:
       </div>
       <div
         ref={scrollRef}
-        className="px-4 py-2 max-h-72 overflow-y-auto flex flex-col"
+        className="px-4 py-3 max-h-96 overflow-y-auto flex flex-col"
         style={{ maskImage: 'linear-gradient(to bottom, transparent, black 10%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%)' }}
       >
-        <div className="mt-auto flex flex-col pt-6 gap-1">
+        <div className="mt-auto flex flex-col pt-6 gap-1.5">
           {messages.length === 0 && (
-            <div className="py-3 text-[13px]" style={{ color: 'var(--dim)' }}>No messages yet. Say hi!</div>
+            <div className="py-3 text-[14px]" style={{ color: 'var(--dim)' }}>No messages yet. Say hi!</div>
           )}
           {messages.map((m) => {
             const mine = m.playerIndex === myIndex;
@@ -392,11 +392,11 @@ export function ChatRoom({ messages, myIndex, unread, onOpen, onClose, onSend }:
                 key={m.id}
                 className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}
               >
-                <span className="text-[10px] uppercase tracking-[0.12em]" style={{ color: nameColor }}>
+                <span className="text-[11px] uppercase tracking-[0.12em]" style={{ color: nameColor }}>
                   {mine ? 'You' : m.name}
                 </span>
                 <span
-                  className="text-[13px] leading-snug px-2.5 py-1 rounded-xl max-w-[85%] break-words whitespace-pre-wrap"
+                  className="text-[15px] leading-snug px-3 py-1.5 rounded-xl max-w-[85%] break-words whitespace-pre-wrap"
                   style={{
                     background: mine ? 'var(--bg-2)' : 'var(--bg-1)',
                     border: '1px solid var(--line-soft)',
@@ -412,7 +412,7 @@ export function ChatRoom({ messages, myIndex, unread, onOpen, onClose, onSend }:
       </div>
       <form
         onSubmit={(e) => { e.preventDefault(); submit(); }}
-        className="flex items-center gap-2 px-3 py-2"
+        className="flex items-center gap-2 px-3 py-2.5"
         style={{ borderTop: '1px solid var(--line)' }}
       >
         <input
@@ -426,13 +426,13 @@ export function ChatRoom({ messages, myIndex, unread, onOpen, onClose, onSend }:
           autoCapitalize="sentences"
           spellCheck={false}
           name="seep-chat-input"
-          className="flex-1 bg-transparent outline-none text-[13px]"
+          className="flex-1 bg-transparent outline-none text-[15px]"
           style={{ color: 'var(--fg)' }}
         />
         <button
           type="submit"
           disabled={!draft.trim()}
-          className="text-xs font-semibold px-3 py-1 rounded-full transition-colors"
+          className="text-sm font-semibold px-4 py-1.5 rounded-full transition-colors"
           style={{
             background: draft.trim() ? 'var(--accent)' : 'var(--bg-2)',
             color: draft.trim() ? '#06121f' : 'var(--dimmer)',
