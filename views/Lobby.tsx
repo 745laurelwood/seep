@@ -236,7 +236,10 @@ export const Lobby: React.FC<LobbyProps> = ({
               Start Game
             </button>
           ) : (
-            <div className="text-center animate-pulse" style={{ color: 'var(--fg-soft)' }}>Waiting for host to start</div>
+            <div className="text-center flex items-center justify-center gap-2" style={{ color: 'var(--fg-soft)' }}>
+              <span className="animate-pulse inline-block w-2 h-2 rounded-full" style={{ background: 'var(--accent)' }} />
+              Waiting for host to start
+            </div>
           )}
           <button
             onClick={() => { clearSession(); window.location.reload(); }}

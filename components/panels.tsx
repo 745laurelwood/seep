@@ -550,7 +550,10 @@ export function GameOverModal({ state, isHost, myIndex, onNextRound, onReturnToL
             Next Round
           </button>
         ) : (
-          <div className="animate-pulse" style={{ color: 'var(--fg-soft)' }}>Waiting for host</div>
+          <div className="flex items-center justify-center gap-2" style={{ color: 'var(--fg-soft)' }}>
+            <span className="animate-pulse inline-block w-2 h-2 rounded-full" style={{ background: 'var(--accent)' }} />
+            Waiting for host
+          </div>
         )}
       </div>
     </div>
