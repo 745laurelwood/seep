@@ -379,7 +379,7 @@ export const MobileView: React.FC = () => {
         {mobileChatOpen && chatEnabled && (
           <>
             <div className="m-sheet-backdrop" onClick={() => setMobileChatOpen(false)} />
-            <div className="m-sheet" style={{ maxHeight: '75dvh' }}>
+            <div className="m-sheet" style={{ maxHeight: '75dvh', paddingBottom: 'calc(var(--safe-b) + 6px)' }}>
               <div className="m-sheet-handle" />
               <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, fontFamily: 'Fredoka', fontSize: 15, fontWeight: 500, color: 'var(--fg)' }}>
                 Chat
