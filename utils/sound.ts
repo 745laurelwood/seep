@@ -67,6 +67,12 @@ export const sounds = {
 
   // Tiny tick — card dealt
   deal: () => seq([{ freq: 1400, dur: 0.025, type: 'square', gain: 0.04 }]),
+
+  // Soft two-note chime — chat message received
+  chat: () => seq([
+    { freq: 880, dur: 0.05, type: 'sine', gain: 0.05 },
+    { freq: 660, dur: 0.10, type: 'sine', gain: 0.05, delay: 0.05 },
+  ]),
 };
 
 export const setMuted = (m: boolean) => { muted = m; };

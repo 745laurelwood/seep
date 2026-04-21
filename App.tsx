@@ -159,6 +159,21 @@ export default function App() {
     };
   }, [isMultiplayer, isHost]);
 
+  // ── Chat notification sound (plays for messages from others, not our own) ──
+  const prevChatLenRef = useRef<number | null>(null);
+  useEffect(() => {
+    const len = state.chatLog?.length ?? 0;
+    if (prevChatLenRef.current === null) {
+      prevChatLenRef.current = len;
+      return;
+    }
+    if (len > prevChatLenRef.current) {
+      const latest = state.chatLog[len - 1];
+      if (latest && latest.playerIndex !== myIndex) sounds.chat();
+    }
+    prevChatLenRef.current = len;
+  }, [state.chatLog, myIndex]);
+
   // ── Chat unread tracking ──
   // Increment when chatLog grows while chat is closed; reset on open.
   useEffect(() => {
