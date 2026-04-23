@@ -48,7 +48,7 @@ export const Rulebook: React.FC<RulebookProps> = ({ onClose }) => {
             52-card deck is used.
           </p>
           <p style={{ color: 'var(--fg-soft)' }}>
-            Seats around the table alternate by team: <strong className="text-[color:var(--accent)]">Team A</strong> sits
+            Player order alternates: <strong className="text-[color:var(--accent)]">Team A</strong> sits
             opposite itself, and <strong className="text-[color:var(--red)]">Team B</strong> sits opposite itself. A
             round progresses clockwise. Teams combine their captured cards at the end of each round to
             score points.
