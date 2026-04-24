@@ -263,14 +263,13 @@ export const gameReducer = (state: GameState, action: Action): GameState => {
         // satisfies it. A player becomes an owner only if their team is not yet
         // committed AND they retain a same-rank card after this play.
         // Per-house rule: when joining a same-rank house, all its owners are
-        // preserved. When absorbing a different-rank house (rank change), only
-        // same-team prior owners survive — opponent owners lose the house entirely.
-        const myTeam = state.players[playerIndex].team;
+        // preserved (their same-rank commitment still holds). When absorbing a
+        // different-rank house (rank change), all prior owners lose it — their
+        // commitment was to the old rank and doesn't carry to the new one.
         const retainedPriorOwners = usedHouses.flatMap(h =>
-          h.rank === targetRank
-            ? h.ownerIndices
-            : h.ownerIndices.filter(idx => state.players[idx].team === myTeam)
+          h.rank === targetRank ? h.ownerIndices : []
         );
+        const myTeam = state.players[playerIndex].team;
         const myTeamCommitted = retainedPriorOwners.some(idx => state.players[idx].team === myTeam);
         const retainsTargetRank = newHand.some(c => c.rank === targetRank);
         const becomesOwner = !myTeamCommitted && retainsTargetRank;
