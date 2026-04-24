@@ -70,14 +70,14 @@ export const CardComponent: React.FC<CardProps> = ({
       data-card-id={flipAttr}
       style={{
         background: 'linear-gradient(180deg, #faf9f5 0%, #ece8de 100%)',
-        ...(isSelected ? { zIndex: Z_CARD_SELECTED } : {}),
+        ...(isSelected ? { zIndex: Z_CARD_SELECTED, transform: 'translateY(-0.5rem)' } : {}),
       }}
       className={`
         relative rounded-lg card-shadow select-none card-transition
         ${sizeClass}
         ${onClick ? 'cursor-pointer' : ''}
         ${isSelected
-          ? 'ring-[3px] ring-[color:var(--red)] -translate-y-2 sm:-translate-y-4 shadow-[0_0_12px_3px_rgba(232,146,154,0.9)]'
+          ? 'ring-[3px] ring-[color:var(--red)] shadow-[0_0_12px_3px_rgba(232,146,154,0.9)]'
           : 'ring-1 ring-black/10'}
         ${isPlayable && !isSelected ? 'card-playable' : ''}
         flex flex-col justify-between p-1 sm:p-1.5
