@@ -159,6 +159,9 @@ export const FeltContent: React.FC = () => {
             const ownerNames = house.ownerIndices.map(i => state.players[i]?.name).filter(Boolean).join(', ');
             const tooltipLabel = ownerNames || 'Unowned';
             const stackDepth = Math.min(3, Math.max(1, house.cards.length));
+            const ownerTeam = state.players[house.ownerIndices[0]]?.team;
+            const teamColor = ownerTeam === 1 ? 'var(--red)' : 'var(--accent)';
+            const teamColorBright = ownerTeam === 1 ? '#ff5a6e' : '#3d8aff';
             return (
               <div
                 key={house.id}
@@ -196,9 +199,11 @@ export const FeltContent: React.FC = () => {
                   className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 rounded-full min-w-[22px] h-6 sm:min-w-[26px] sm:h-7 px-1.5 flex items-center justify-center text-xs sm:text-sm font-display cursor-pointer hover:scale-110 transition-transform active:scale-95"
                   style={{
                     zIndex: Z_HOUSE_BADGE,
-                    background: house.isCemented ? 'var(--gold)' : 'var(--accent)',
+                    background: teamColor,
                     color: '#1a1d22',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 2px var(--bg)',
+                    boxShadow: house.isCemented
+                      ? `0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px var(--bg), 0 0 0 3px ${teamColorBright}`
+                      : '0 2px 6px rgba(0,0,0,0.4), 0 0 0 2px var(--bg)',
                     fontWeight: 600,
                   }}
                   title="Inspect House Cards"

@@ -133,7 +133,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ playerIndex, position })
         const showEmpty = visibleHand.length === 0 && state.gamePhase !== 'GAME_OVER';
         const emptyPlaceholder = (
           <div
-            className="w-14 h-20 sm:w-16 sm:h-24 md:w-20 md:h-28 rounded-lg flex items-center justify-center text-xs"
+            className="w-14 h-20 sm:w-16 sm:h-24 md:w-20 md:h-28 lg:w-24 lg:h-36 rounded-lg flex items-center justify-center text-xs"
             style={{ border: '2px dashed var(--line)', color: 'var(--dimmer)' }}
           >
             Empty

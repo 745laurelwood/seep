@@ -168,8 +168,12 @@ export const MobileView: React.FC = () => {
     const cards = state.players.filter(p => p.team === teamIndex).flatMap(p => p.capturedCards);
     return teamSeeps + cards.reduce((sum, c) => sum + getPointsForCard(c), 0);
   };
-  const total0 = state.totalScores.team0 + getLivePoints(0);
-  const total1 = state.totalScores.team1 + getLivePoints(1);
+  const livePts0 = getLivePoints(0);
+  const livePts1 = getLivePoints(1);
+  const base0 = state.totalScores.team0;
+  const base1 = state.totalScores.team1;
+  const total0 = base0 + livePts0;
+  const total1 = base1 + livePts1;
   const isMyTurn = state.currentTurn === myIndex;
 
   return (
@@ -193,12 +197,12 @@ export const MobileView: React.FC = () => {
             <div className="m-hs-divider" />
             <div className={`m-hs-cell ${total0 > total1 ? 'active lead' : ''}`}>
               <span className="label">Team A</span>
-              <span className="v">{total0}</span>
+              <span className="v">{base0}{livePts0 > 0 ? ` (${livePts0})` : ''}</span>
             </div>
             <div className="m-hs-divider" />
             <div className={`m-hs-cell b ${total1 > total0 ? 'active lead' : ''}`}>
               <span className="label">Team B</span>
-              <span className="v">{total1}</span>
+              <span className="v">{base1}{livePts1 > 0 ? ` (${livePts1})` : ''}</span>
             </div>
             <div className="m-hs-divider" />
             <div className={`m-hs-cell ${total1 > total0 ? 'b' : ''} ${total0 !== total1 ? 'lead' : ''}`}>

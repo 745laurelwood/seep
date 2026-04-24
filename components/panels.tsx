@@ -30,8 +30,10 @@ export function HUD({ state, isMultiplayer, roomId }: {
   const pts0 = getLivePoints(0);
   const pts1 = getLivePoints(1);
 
-  const total0 = state.totalScores.team0 + pts0;
-  const total1 = state.totalScores.team1 + pts1;
+  const base0 = state.totalScores.team0;
+  const base1 = state.totalScores.team1;
+  const total0 = base0 + pts0;
+  const total1 = base1 + pts1;
   const lead = total0 - total1;
   const leadingTeam: 0 | 1 | null = lead > 0 ? 0 : lead < 0 ? 1 : null;
 
@@ -45,14 +47,14 @@ export function HUD({ state, isMultiplayer, roomId }: {
           <div className={`flex flex-col items-center justify-center px-2.5 py-0.5 sm:px-6 sm:py-1 rounded-full transition-colors ${team0IsLeader ? 'bg-[color:var(--bg-2)] ring-1 ring-[color:var(--line)]' : ''}`}>
             <span className="text-[9px] uppercase tracking-[0.16em]" style={{ color: 'var(--accent)' }}>A</span>
             <span className="font-display text-sm sm:text-base leading-none tabular-nums" style={{ color: 'var(--accent)' }}>
-              {total0}
+              {base0}{pts0 > 0 ? ` (${pts0})` : ''}
             </span>
           </div>
           <div className="w-px my-1" style={{ background: 'var(--line)' }} />
           <div className={`flex flex-col items-center justify-center px-2.5 py-0.5 sm:px-6 sm:py-1 rounded-full transition-colors ${team1IsLeader ? 'bg-[color:var(--bg-2)] ring-1 ring-[color:var(--line)]' : ''}`}>
             <span className="text-[9px] uppercase tracking-[0.16em]" style={{ color: 'var(--red)' }}>B</span>
             <span className="font-display text-sm sm:text-base leading-none tabular-nums" style={{ color: 'var(--red)' }}>
-              {total1}
+              {base1}{pts1 > 0 ? ` (${pts1})` : ''}
             </span>
           </div>
           <div className="w-px my-1" style={{ background: 'var(--line)' }} />
@@ -68,7 +70,7 @@ export function HUD({ state, isMultiplayer, roomId }: {
         </div>
       </div>
 
-      {(state.bidRank != null || (pts0 > 0 || pts1 > 0) || (isMultiplayer && roomId) || (state.gamePhase === 'PLAYING' && state.players[state.dealerIndex])) && (
+      {(state.bidRank != null || (isMultiplayer && roomId) || (state.gamePhase === 'PLAYING' && state.players[state.dealerIndex])) && (
         <div className="mt-2 flex flex-col gap-y-1 text-[14px]" style={{ color: 'var(--dim)' }}>
           {state.bidRank != null && (
             <div>
@@ -85,22 +87,15 @@ export function HUD({ state, isMultiplayer, roomId }: {
               <span className="text-[color:var(--fg)]">{state.players[state.dealerIndex].name}</span>
             </div>
           )}
-          {((pts0 > 0 || pts1 > 0) || (isMultiplayer && roomId)) && (
+          {isMultiplayer && roomId && (
             <div className="flex items-center gap-x-3">
-              {(pts0 > 0 || pts1 > 0) && (
-                <span style={{ color: 'var(--good)' }}>
-                  This Round: +{pts0} / +{pts1}
-                </span>
-              )}
-              {isMultiplayer && roomId && (
-                <button
-                  onClick={copyRoom}
-                  title="Click to copy — share with a disconnected player"
-                  className="ml-auto font-mono hover:text-[color:var(--accent)] transition-colors"
-                >
-                  {copied ? 'Copied!' : roomId}
-                </button>
-              )}
+              <button
+                onClick={copyRoom}
+                title="Click to copy — share with a disconnected player"
+                className="ml-auto font-mono hover:text-[color:var(--accent)] transition-colors"
+              >
+                {copied ? 'Copied!' : roomId}
+              </button>
             </div>
           )}
         </div>
