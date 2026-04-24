@@ -77,7 +77,7 @@ export const CardComponent: React.FC<CardProps> = ({
         ${sizeClass}
         ${onClick ? 'cursor-pointer' : ''}
         ${isSelected
-          ? 'ring-2 ring-[color:var(--red)] -translate-y-2 sm:-translate-y-4 shadow-[0_0_10px_2px_rgba(232,146,154,0.9)]'
+          ? 'ring-[3px] ring-[color:var(--red)] -translate-y-2 sm:-translate-y-4 shadow-[0_0_12px_3px_rgba(232,146,154,0.9)]'
           : 'ring-1 ring-black/10'}
         ${isPlayable && !isSelected ? 'card-playable' : ''}
         flex flex-col justify-between p-1 sm:p-1.5

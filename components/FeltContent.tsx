@@ -191,7 +191,7 @@ export const FeltContent: React.FC = () => {
                   card={topCard}
                   isHouse
                   isCementedHouse={house.isCemented}
-                  className={selectedHouseIds.has(house.id) ? 'ring-2 ring-[color:var(--red)] shadow-[0_0_10px_2px_rgba(232,146,154,0.9)]' : ''}
+                  className={selectedHouseIds.has(house.id) ? 'ring-[3px] ring-[color:var(--red)] shadow-[0_0_12px_3px_rgba(232,146,154,0.9)]' : ''}
                   flipId={topCard.id}
                 />
                 <div
