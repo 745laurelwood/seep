@@ -159,9 +159,13 @@ export const FeltContent: React.FC = () => {
             const ownerNames = house.ownerIndices.map(i => state.players[i]?.name).filter(Boolean).join(', ');
             const tooltipLabel = ownerNames || 'Unowned';
             const stackDepth = Math.min(3, Math.max(1, house.cards.length));
+            const ownerTeams = house.ownerIndices.map(i => state.players[i]?.team);
+            const hasTeam0 = ownerTeams.includes(0);
+            const hasTeam1 = ownerTeams.includes(1);
+            const isCoOwned = hasTeam0 && hasTeam1;
             const ownerTeam = state.players[house.ownerIndices[0]]?.team;
-            const teamColor = ownerTeam === 1 ? 'var(--red)' : 'var(--accent)';
-            const teamColorBright = ownerTeam === 1 ? '#ff5a6e' : '#3d8aff';
+            const teamColor = isCoOwned ? '#a980e8' : (ownerTeam === 1 ? 'var(--red)' : 'var(--accent)');
+            const teamColorBright = isCoOwned ? '#c9a4ff' : (ownerTeam === 1 ? '#ff5a6e' : '#3d8aff');
             return (
               <div
                 key={house.id}
