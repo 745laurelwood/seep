@@ -171,7 +171,7 @@ export const FeltContent: React.FC = () => {
                 key={house.id}
                 onClick={() => toggleHouse(house.id)}
                 data-card-id={`house-${house.id}`}
-                className={`group relative isolate transition-transform hover:scale-105 hover:-translate-y-1 cursor-pointer flex-shrink-0 ${selectedHouseIds.has(house.id) ? 'scale-110 -translate-y-4' : ''}`}
+                className={`group relative isolate transition-transform hover:scale-105 hover:-translate-y-1 cursor-pointer flex-shrink-0 ${selectedHouseIds.has(house.id) ? 'scale-110 -translate-y-3' : ''}`}
                 style={selectedHouseIds.has(house.id) ? { zIndex: Z_CARD_SELECTED } : undefined}
               >
                 <div
@@ -195,7 +195,7 @@ export const FeltContent: React.FC = () => {
                   card={topCard}
                   isHouse
                   isCementedHouse={house.isCemented}
-                  className={selectedHouseIds.has(house.id) ? 'ring-[3px] ring-[color:var(--red)] shadow-[0_0_12px_3px_rgba(232,146,154,0.9)]' : ''}
+                  isSelected={selectedHouseIds.has(house.id)}
                   flipId={topCard.id}
                 />
                 <div
