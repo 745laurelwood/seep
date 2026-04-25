@@ -1148,6 +1148,7 @@ export default function App() {
         isMultiplayer={isMultiplayer}
         isHost={isHost}
         peerId={peerId}
+        myIndex={myIndex}
         playerName={playerName}
         setPlayerName={setPlayerName}
         fragileHouses={fragileHouses}
@@ -1165,6 +1166,7 @@ export default function App() {
           dispatch({ type: 'START_GAME', payload: { playerName: playerName || 'You', allowFragileHouses: fragileHouses } });
         }}
         onStartRound={() => dispatch({ type: 'START_ROUND' })}
+        onSetTeam={(playerIndex, team) => handleDispatch({ type: 'SET_PLAYER_TEAM', payload: { playerIndex, team } })}
       />
     );
   }
