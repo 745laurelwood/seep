@@ -171,7 +171,7 @@ export const FeltContent: React.FC = () => {
                 key={house.id}
                 onClick={() => toggleHouse(house.id)}
                 data-card-id={`house-${house.id}`}
-                className={`group relative isolate transition-transform hover:scale-105 hover:-translate-y-1 cursor-pointer flex-shrink-0 ${selectedHouseIds.has(house.id) ? 'scale-110 -translate-y-3' : ''}`}
+                className={`group relative transition-transform hover:scale-105 hover:-translate-y-1 cursor-pointer flex-shrink-0 ${selectedHouseIds.has(house.id) ? 'scale-110 -translate-y-3' : ''}`}
                 style={selectedHouseIds.has(house.id) ? { zIndex: Z_CARD_SELECTED } : undefined}
               >
                 <div
@@ -202,7 +202,9 @@ export const FeltContent: React.FC = () => {
                   onClick={(e) => { e.stopPropagation(); setPreviewHouseId(house.id); }}
                   className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 rounded-full min-w-[22px] h-6 sm:min-w-[26px] sm:h-7 px-1.5 flex items-center justify-center text-xs sm:text-sm font-display cursor-pointer hover:scale-110 transition-transform active:scale-95"
                   style={{
-                    zIndex: Z_HOUSE_BADGE,
+                    // Sit above flying-card animations (z 10000) so the rank
+                    // pip stays visible while a thrown card crosses the felt.
+                    zIndex: 10001,
                     background: teamColor,
                     color: '#1a1d22',
                     boxShadow: house.isCemented
@@ -244,6 +246,11 @@ export const FeltContent: React.FC = () => {
               <div
                 className="relative inline-block isolate flex-shrink-0 mr-4"
                 data-card-id="capture-stack"
+                // Match the FLIP elevation so the ghost (and the played card it
+                // contains) doesn't get outranked by sibling cards/houses that
+                // shift position and get bumped to z-10000 by the FLIP helper.
+                // Rank badges at z-10001 still sit above this.
+                style={{ zIndex: 10000 }}
               >
                 {visualCapturePile.map((targetId, i) => {
                   const targetCard = state.floor.find(f => f.id === targetId);
