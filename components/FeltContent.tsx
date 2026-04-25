@@ -218,7 +218,7 @@ export const FeltContent: React.FC = () => {
                 </div>
                 <div
                   className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[9px] rounded-full px-1.5 py-0.5 whitespace-nowrap"
-                  style={{ zIndex: Z_HOUSE_BADGE, background: 'var(--bg)', border: '1px solid var(--line)', color: '#fff', fontWeight: 600, letterSpacing: '0.04em' }}
+                  style={{ zIndex: 10001, background: 'var(--bg)', border: '1px solid var(--line)', color: '#fff', fontWeight: 600, letterSpacing: '0.04em' }}
                 >
                   {house.cards.reduce((sum, c) => sum + getPointsForCard(c), 0)}
                 </div>
