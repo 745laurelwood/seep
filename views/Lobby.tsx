@@ -23,6 +23,7 @@ interface LobbyProps {
   onStartSinglePlayer: () => void;
   onStartRound: () => void;
   onSetTeam: (playerIndex: number, team: 0 | 1) => void;
+  onLeaveRoom: () => void;
 }
 
 const TEAM_PILL_BG: Record<0 | 1, string> = {
@@ -47,7 +48,7 @@ export const Lobby: React.FC<LobbyProps> = ({
   fragileHouses, setFragileHouses,
   joinId, setJoinId,
   savedSession, setSavedSession,
-  onCreateRoom, onJoinRoom, onStartSinglePlayer, onStartRound, onSetTeam,
+  onCreateRoom, onJoinRoom, onStartSinglePlayer, onStartRound, onSetTeam, onLeaveRoom,
 }) => {
   const [showRulebook, setShowRulebook] = useState(false);
   if (showRulebook) return <Rulebook onClose={() => setShowRulebook(false)} />;
@@ -307,7 +308,7 @@ export const Lobby: React.FC<LobbyProps> = ({
             );
           })()}
           <button
-            onClick={() => { clearSession(); window.location.reload(); }}
+            onClick={onLeaveRoom}
             className="mt-3 w-full py-2 text-sm transition-colors"
             style={{ color: 'var(--dim)' }}
           >
