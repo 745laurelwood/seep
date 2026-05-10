@@ -1,0 +1,36 @@
+- generic [ref=e4]:
+  - heading "Lobby" [level=2] [ref=e22]
+  - generic [ref=e23]:
+    - paragraph [ref=e24]: "Share this Room ID with friends:"
+    - paragraph
+  - generic [ref=e25]:
+    - generic [ref=e26]: Players
+    - generic [ref=e27]:
+      - button "5" [disabled] [ref=e28]
+      - button "6" [ref=e29] [cursor=pointer]
+  - generic [ref=e30]:
+    - generic [ref=e32]:
+      - generic [ref=e33]: "1"
+      - generic [ref=e35]: You(you)
+    - generic [ref=e37]:
+      - generic [ref=e38]: "2"
+      - generic [ref=e39]:
+        - generic [ref=e40]: CosmicOtter
+        - generic [ref=e41]: Bot
+    - generic [ref=e43]:
+      - generic [ref=e44]: "3"
+      - generic [ref=e45]:
+        - generic [ref=e46]: MochiMonarch
+        - generic [ref=e47]: Bot
+    - generic [ref=e49]:
+      - generic [ref=e50]: "4"
+      - generic [ref=e51]:
+        - generic [ref=e52]: SilverTongue
+        - generic [ref=e53]: Bot
+    - generic [ref=e55]:
+      - generic [ref=e56]: "5"
+      - generic [ref=e57]:
+        - generic [ref=e58]: RiverBandit
+        - generic [ref=e59]: Bot
+  - button "Start Game" [ref=e60] [cursor=pointer]
+  - button "Leave" [ref=e61] [cursor=pointer]
