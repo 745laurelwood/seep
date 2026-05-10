@@ -1,4 +1,4 @@
-import { Card, ChatMessage, GameState, Player } from './types';
+import { Card, ChatMessage, GameState, Player, Spectator } from './types';
 import { createDeck, shuffleDeck } from './utils/deck';
 import { getRankLabel, SUIT_SYMBOLS, MAX_LOG_ENTRIES, CHAT_MAX_HISTORY, EMPTY_SLOT_NAME, pickBotNames } from './constants';
 import {
@@ -28,7 +28,9 @@ export type Action =
       buildRank?: number;
     }}
   | { type: 'ADD_LOG'; payload: string }
-  | { type: 'SEND_CHAT'; payload: ChatMessage };
+  | { type: 'SEND_CHAT'; payload: ChatMessage }
+  | { type: 'ADD_SPECTATOR'; payload: Spectator }
+  | { type: 'REMOVE_SPECTATOR'; payload: { peerId: string } };
 
 export const INITIAL_STATE: GameState = {
   gamePhase: 'LOBBY',
@@ -47,6 +49,7 @@ export const INITIAL_STATE: GameState = {
   gameLog: [],
   seeps: { team0: 0, team1: 0 },
   chatLog: [],
+  spectators: [],
 };
 
 export function makeEmptyPlayer(id: number, name: string, isHuman: boolean, peerId?: string): Player {
@@ -466,6 +469,17 @@ export const gameReducer = (state: GameState, action: Action): GameState => {
 
     case 'SEND_CHAT':
       return { ...state, chatLog: [...state.chatLog, action.payload].slice(-CHAT_MAX_HISTORY) };
+
+    case 'ADD_SPECTATOR': {
+      const list = state.spectators ?? [];
+      if (list.some(sp => sp.peerId === action.payload.peerId)) return state;
+      return { ...state, spectators: [...list, action.payload] };
+    }
+
+    case 'REMOVE_SPECTATOR': {
+      const list = state.spectators ?? [];
+      return { ...state, spectators: list.filter(sp => sp.peerId !== action.payload.peerId) };
+    }
 
     default:
       return state;

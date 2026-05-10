@@ -40,6 +40,11 @@ export interface Player {
   team: 0 | 1; // 0 for North/South (or P1/P3), 1 for East/West (or P2/P4)
 }
 
+export interface Spectator {
+  name: string;
+  peerId: string;
+}
+
 export type GamePhase = 'LOBBY' | 'BIDDING' | 'PLAYING' | 'ROUND_OVER' | 'GAME_OVER';
 
 export interface GameState {
@@ -78,6 +83,12 @@ export interface GameState {
     buildRank?: number;
   } | null;
   readyForLobbyIndices?: number[];
+
+  // Spectators — anyone who arrived after the game was already in progress, or
+  // whose seat couldn't be filled. They never appear in `players` and never
+  // see any hand on the wire (the host publishes a redacted state to a
+  // separate spectator topic).
+  spectators: Spectator[];
 }
 
 export interface Move {

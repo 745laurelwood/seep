@@ -14,7 +14,7 @@ interface PlayerHandProps {
 /** Render a single player's hand frame (name, turn badge, cards, and for "bottom": action bar). */
 export const PlayerHand: React.FC<PlayerHandProps> = ({ playerIndex, position }) => {
   const {
-    state, myIndex,
+    state, myIndex, isSpectator,
     selectedCardId, setSelectedCardId,
     setShowMyCaptures,
     visualThrow, sweepingToPlayer,
@@ -24,9 +24,13 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ playerIndex, position })
 
   if (!state.players[playerIndex]) return null;
   const player = state.players[playerIndex];
-  const isMe = playerIndex === myIndex;
+  // Spectators never have a real seat — never treat any slot as "me" for them,
+  // so the bottom slot renders as a regular player and turn pulses, action bar,
+  // captures click-through, etc. all stay disabled.
+  const isMe = !isSpectator && playerIndex === myIndex;
   const isCurrentTurn = state.currentTurn === playerIndex;
   const isBidderSeat = isMe && state.gamePhase === 'BIDDING' && state.bidderIndex === myIndex;
+  const isMyBottomSpectatorSlot = isSpectator && position === 'bottom';
 
   const wrapperRotation = position === 'left' ? 'rotate-90' : position === 'right' ? '-rotate-90' : '';
   const wrapperScale = position !== 'bottom' ? 'scale-75' : '';
@@ -127,6 +131,21 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ playerIndex, position })
       )}
 
       {(() => {
+        if (isMyBottomSpectatorSlot) {
+          return (
+            <div
+              className="px-3 py-2 rounded-lg uppercase tracking-[0.18em] text-xs font-semibold"
+              style={{
+                border: '1px solid var(--accent-soft)',
+                color: 'var(--accent)',
+                background: 'rgba(111,176,255,0.06)',
+                letterSpacing: '0.18em',
+              }}
+            >
+              Spectating
+            </div>
+          );
+        }
         const visibleHand = [...player.hand]
           .filter(c => !(visualThrow && visualThrow.cardId === c.id && visualThrow.playerIndex === playerIndex))
           .sort((a, b) => a.rank === b.rank ? a.suit.localeCompare(b.suit) : a.rank - b.rank);

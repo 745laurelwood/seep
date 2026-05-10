@@ -107,7 +107,7 @@ function MobileChatBody({ messages, myIndex, onSend }: {
 
 export const MobileView: React.FC = () => {
   const {
-    state, myIndex, isMultiplayer,
+    state, myIndex, isMultiplayer, isSpectator,
     topPlayer, rightPlayer, leftPlayer, bottomPlayer,
     selectedCardId, setSelectedCardId,
     setShowMyCaptures,
@@ -119,7 +119,8 @@ export const MobileView: React.FC = () => {
     executeAction, executeBid, canBid, bidReason, showSeepAnim,
   } = useGame();
 
-  const chatEnabled = !!state.roomId && state.players.some(p => p.isHuman && p.id !== myIndex);
+  // Spectators don't get chat, captures pop-overs, or any interactive surface.
+  const chatEnabled = !isSpectator && !!state.roomId && state.players.some(p => p.isHuman && p.id !== myIndex);
 
   // Pin .m-phone's height to window.innerHeight (the LAYOUT viewport). On iOS,
   // the keyboard shrinks the VISUAL viewport but leaves the layout viewport
@@ -160,7 +161,11 @@ export const MobileView: React.FC = () => {
     : null;
 
   const oppIndices = [leftPlayer, topPlayer, rightPlayer].filter(i => i !== -1);
-  const me = bottomPlayer !== -1 ? state.players[bottomPlayer] : null;
+  // Spectators have no "me" — they sit at no slot. We still show the bottom
+  // panel rendered as a regular player (host), but with no turn pulse, no
+  // captures click, and no action bar.
+  const me = !isSpectator && bottomPlayer !== -1 ? state.players[bottomPlayer] : null;
+  const bottomPlayerForSpectator = isSpectator && bottomPlayer !== -1 ? state.players[bottomPlayer] : null;
 
   const getLivePoints = (teamIndex: 0 | 1) => {
     if (state.gamePhase !== 'PLAYING') return 0;
@@ -174,7 +179,7 @@ export const MobileView: React.FC = () => {
   const base1 = state.totalScores.team1;
   const total0 = base0 + livePts0;
   const total1 = base1 + livePts1;
-  const isMyTurn = state.currentTurn === myIndex;
+  const isMyTurn = !isSpectator && state.currentTurn === myIndex;
 
   return (
     <>
@@ -260,6 +265,31 @@ export const MobileView: React.FC = () => {
           )}
         </div>
 
+        {bottomPlayerForSpectator && (
+          <div className="m-me-chip" style={{ position: 'relative' }}>
+            <div className="left">
+              <div className={`av ${bottomPlayerForSpectator.team === 1 ? 'b' : ''}`}>
+                {bottomPlayerForSpectator.name?.[0]?.toUpperCase() || '?'}
+              </div>
+              <div className="who">{bottomPlayerForSpectator.name}</div>
+              <span
+                style={{
+                  fontSize: 10,
+                  padding: '2px 8px',
+                  borderRadius: 999,
+                  background: 'rgba(111,176,255,0.10)',
+                  color: 'var(--accent)',
+                  border: '1px solid var(--accent-soft)',
+                  fontWeight: 600,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Spectating
+              </span>
+            </div>
+          </div>
+        )}
         {me && (
           <div className="m-me-chip" style={{ position: 'relative' }}>
             {sweepingToPlayer === bottomPlayer && sweepTarget && (
@@ -341,6 +371,25 @@ export const MobileView: React.FC = () => {
           </div>
         )}
 
+        {isSpectator && (
+          <section className="m-hand-area" aria-label="Spectating">
+            <div
+              className="m-hand"
+              style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                color: 'var(--accent)',
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                fontSize: 12,
+                fontWeight: 600,
+                opacity: 0.85,
+              }}
+            >
+              Spectating
+            </div>
+          </section>
+        )}
         {me && (
           <section className="m-hand-area">
             <div className="m-hand no-scrollbar">
