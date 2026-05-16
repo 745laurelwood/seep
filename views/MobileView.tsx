@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CardComponent } from '../components/CardComponent';
-import { ActionBar, LastMoveBanner, SeepOverlay } from '../components/panels';
+import { ActionBar, LastMoveBanner, SeepOverlay, colorizeSuits } from '../components/panels';
 import { FeltContent } from '../components/FeltContent';
 import { SharedOverlays } from '../components/SharedOverlays';
 import { useGame } from '../GameContext';
@@ -458,7 +458,7 @@ export const MobileView: React.FC = () => {
                     key={i}
                     style={{ padding: '10px 0', borderBottom: '1px solid var(--line-soft)', fontSize: 13, color: 'var(--fg-soft)', lineHeight: 1.4 }}
                   >
-                    {entry}
+                    {colorizeSuits(entry)}
                   </div>
                 ))}
                 {state.gameLog.length === 0 && (
