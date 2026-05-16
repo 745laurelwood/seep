@@ -26,9 +26,11 @@ export const DesktopView: React.FC = () => {
           <div className="pointer-events-auto">
             <HUD state={state} isMultiplayer={isMultiplayer} roomId={state.roomId || ''} />
           </div>
+          {/* GameLog disabled — remembering past plays is part of the game.
           <div className="pointer-events-auto flex justify-end">
             <GameLog entries={state.gameLog} logEndRef={logEndRef} />
           </div>
+          */}
         </div>
 
         <div className="game-area-top flex items-start justify-center pt-3 sm:pt-4">

@@ -363,10 +363,12 @@ export const MobileView: React.FC = () => {
                 </button>
               )}
               */}
+              {/* Log button disabled — remembering past plays is part of the game.
               <button className="log-btn" onClick={() => setMobileLogOpen(true)}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
                 Log
               </button>
+              */}
             </div>
           </div>
         )}
@@ -438,6 +440,7 @@ export const MobileView: React.FC = () => {
           )}
         </footer>
 
+        {/* Mobile log sheet disabled — remembering past plays is part of the game.
         {mobileLogOpen && (
           <>
             <div className="m-sheet-backdrop" onClick={() => setMobileLogOpen(false)} />
@@ -468,6 +471,7 @@ export const MobileView: React.FC = () => {
             </div>
           </>
         )}
+        */}
 
         {mobileChatOpen && chatEnabled && (
           <>
