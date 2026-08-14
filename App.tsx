@@ -9,7 +9,7 @@ import { loadSession, saveSession, clearSession, SavedSession } from './utils/se
 import {
   getRankLabel,
   SEEP_ANIM_DURATION_MS, AI_BID_DELAY_MS, AI_PLAY_DELAY_MS, RESHUFFLE_DELAY_MS,
-  EMPTY_SLOT_NAME, CHAT_MAX_LEN,
+  EMPTY_SLOT_NAME, CHAT_MAX_LEN, SESSION_SAVE_DEBOUNCE_MS,
 } from './constants';
 import {
   NUM_PLAYERS,
@@ -83,6 +83,35 @@ export default function App() {
   const hostInitializedRef = useRef(false);
   const hostRoomIdRef = useRef<string | null>(null);
 
+  // Identity of *this* host session. Room ids are reused (session resume keeps
+  // the old code, and the 4-char space is small on a shared public broker), so
+  // a room id alone can't tell a live host from a stale tab that woke up and
+  // rebroadcast a game from hours ago. Every SYNC_STATE carries the boot id,
+  // the boot timestamp and a monotonic sequence; clients use those to reject
+  // snapshots from an older host and out-of-order snapshots from the live one.
+  const hostBootIdRef = useRef('');
+  const hostBootTsRef = useRef(0);
+  const syncSeqRef = useRef(0);
+
+  const syncEnvelope = (payload: GameState) => JSON.stringify({
+    type: 'SYNC_STATE',
+    payload,
+    hostBootId: hostBootIdRef.current,
+    hostBootTs: hostBootTsRef.current,
+    seq: ++syncSeqRef.current,
+  });
+
+  // Close any live client before opening another. Every mqtt.connect() that
+  // isn't torn down leaves a still-subscribed socket whose message handler
+  // keeps dispatching into the current reducer — including traffic from the
+  // room it was connected to previously.
+  const teardownClient = () => {
+    const existing = mqttClientRef.current;
+    mqttClientRef.current = null;
+    if (existing) { try { existing.end(true); } catch { /* already gone */ } }
+  };
+  useEffect(() => () => teardownClient(), []);
+
   // Keep refs in sync
   useEffect(() => { stateRef.current = state; }, [state]);
   useEffect(() => { peerIdRef.current = peerId; }, [peerId]);
@@ -121,8 +150,7 @@ export default function App() {
         if (!client.connected) { client.reconnect(); return; }
       } catch { /* fall through */ }
       try {
-        const snapshot = stateRef.current;
-        client.publish(`seep_game_${roomId}`, JSON.stringify({ type: 'SYNC_STATE', payload: snapshot }));
+        client.publish(`seep_game_${roomId}`, syncEnvelope(stateRef.current));
       } catch (e) { console.error('Host wake rebroadcast error:', e); }
     };
     document.addEventListener('visibilitychange', onVis);
@@ -192,12 +220,20 @@ export default function App() {
     }
   }, [state.chatLog, isMobile, mobileChatOpen]);
 
-  // ── Auto-save host session on every state change ──
+  // ── Auto-save host session ──
+  // Serialising the whole game state into localStorage is a synchronous main-
+  // thread write, and this effect sees every state change — including the ones
+  // fired mid-animation. Trailing-debounce it so it lands between frames
+  // instead of competing with the FLIP transitions.
   useEffect(() => {
     if (!isMultiplayer || !isHost || !state.roomId) return;
     if (state.gamePhase === 'LOBBY') return;
     if (state.gamePhase === 'GAME_OVER') { clearSession(); return; }
-    saveSession({ role: 'host', roomId: state.roomId, playerName, state });
+    const roomId = state.roomId;
+    const t = setTimeout(() => {
+      saveSession({ role: 'host', roomId, playerName, state });
+    }, SESSION_SAVE_DEBOUNCE_MS);
+    return () => clearTimeout(t);
   }, [isMultiplayer, isHost, state, playerName]);
 
   // Mirror host session persistence on the client side, but only once the
@@ -252,13 +288,19 @@ export default function App() {
 
   // ── Networking: broadcast state to clients ──
   // Full state goes to the table topic (players); a redacted copy goes to the
-  // audience topic (spectators).
+  // audience topic (spectators). The redacted copy is skipped when nobody is
+  // watching — a full state snapshot is tens of KB and this effect runs on
+  // every state change, so publishing it twice doubles the host's outbound
+  // load for no reader. Joining spectators are pushed a snapshot explicitly by
+  // the PLAYER_JOINED handler, so they never wait on this effect.
   useEffect(() => {
     if (!isHost || !isMultiplayer || !mqttClientRef.current || !state.roomId) return;
     const client = mqttClientRef.current;
     try {
-      client.publish(`seep_game_${state.roomId}`, JSON.stringify({ type: 'SYNC_STATE', payload: state }));
-      client.publish(`seep_game_${state.roomId}_spec`, JSON.stringify({ type: 'SYNC_STATE', payload: redactStateForSpectators(state) }));
+      client.publish(`seep_game_${state.roomId}`, syncEnvelope(state));
+      if (state.spectators?.length) {
+        client.publish(`seep_game_${state.roomId}_spec`, syncEnvelope(redactStateForSpectators(state)));
+      }
     } catch (e) { console.error('Host broadcast error:', e); }
   }, [state, isHost, isMultiplayer]);
 
@@ -272,14 +314,20 @@ export default function App() {
         if (!client) return;
         try { client.publish(`seep_game_${room}`, JSON.stringify(msg)); } catch (e) { console.error('publishMain error:', e); }
       };
-      const publishSpec = (msg: any) => {
+      // Publishers for stamped SYNC_STATE frames — these must go out with
+      // the host's boot identity, not as a bare {type, payload} object.
+      const publishSyncMain = (payload: GameState) => {
         if (!client) return;
-        try { client.publish(`seep_game_${room}_spec`, JSON.stringify(msg)); } catch (e) { console.error('publishSpec error:', e); }
+        try { client.publish(`seep_game_${room}`, syncEnvelope(payload)); } catch (e) { console.error('publishSyncMain error:', e); }
+      };
+      const publishSyncSpec = (payload: GameState) => {
+        if (!client) return;
+        try { client.publish(`seep_game_${room}_spec`, syncEnvelope(payload)); } catch (e) { console.error('publishSyncSpec error:', e); }
       };
       const rebroadcast = (players: Player[], spectators: Spectator[]) => {
         const snapshot = { ...s, players, spectators };
-        publishMain({ type: 'SYNC_STATE', payload: snapshot });
-        publishSpec({ type: 'SYNC_STATE', payload: redactStateForSpectators(snapshot) });
+        publishSyncMain(snapshot);
+        publishSyncSpec(redactStateForSpectators(snapshot));
       };
 
       if (data.type === 'PLAYER_JOINED') {
@@ -338,8 +386,7 @@ export default function App() {
         // Spectator subscribes to _spec asynchronously after receiving
         // JOIN_ACCEPTED — re-push the redacted state shortly after.
         setTimeout(() => {
-          const cur = stateRef.current;
-          publishSpec({ type: 'SYNC_STATE', payload: redactStateForSpectators(cur) });
+          publishSyncSpec(redactStateForSpectators(stateRef.current));
         }, 400);
         return;
       }
@@ -399,11 +446,20 @@ export default function App() {
 
     hostInitializedRef.current = false;
     hostRoomIdRef.current = roomId;
+    // Fresh identity for this hosting session. Resuming reuses the room code,
+    // so this is the only thing that distinguishes us from an older tab still
+    // sitting on the same room.
+    hostBootIdRef.current = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    hostBootTsRef.current = Date.now();
+    syncSeqRef.current = 0;
 
+    teardownClient();
     const client = mqtt.connect(MQTT_BROKER);
     mqttClientRef.current = client;
+    const isCurrent = () => mqttClientRef.current === client;
 
     client.on('connect', () => {
+      if (!isCurrent()) return;
       console.log('🟩 HOST: Node connected natively to MQTT Broker!');
       setIsDisconnected(false);
       // Subscribe to BOTH the table topic (players) and the spectator topic
@@ -432,17 +488,26 @@ export default function App() {
           // sync while we were away catch up immediately.
           try {
             const snapshot = stateRef.current;
-            client.publish(`seep_game_${roomId}`, JSON.stringify({ type: 'SYNC_STATE', payload: snapshot }));
-            client.publish(`seep_game_${roomId}_spec`, JSON.stringify({ type: 'SYNC_STATE', payload: redactStateForSpectators(snapshot) }));
+            client.publish(`seep_game_${roomId}`, syncEnvelope(snapshot));
+            client.publish(`seep_game_${roomId}_spec`, syncEnvelope(redactStateForSpectators(snapshot)));
           } catch (e) { console.error('🟩 HOST rebroadcast error:', e); }
         }
       });
     });
 
     client.on('message', (topic, message) => {
+      if (!isCurrent()) return;
       try {
         const raw = message.toString();
         const parsed = JSON.parse(raw);
+
+        // The audience topic is a one-way mirror we write to; the only inbound
+        // traffic we accept from it is spectator presence. Everything else on
+        // it is our own publish echoing back (the broker delivers to
+        // subscribers regardless of who published), and acting on that echo
+        // re-forwards it — an unbounded loop that replays one move forever.
+        if (topic === `seep_game_${roomId}_spec`
+            && parsed.type !== 'PLAYER_OFFLINE' && parsed.type !== 'PLAYER_LEAVE') return;
 
         if (parsed.type === 'SYNC_STATE') return;
         if (parsed.type === 'JOIN_ACCEPTED' || parsed.type === 'JOIN_REJECTED') return;
@@ -456,7 +521,7 @@ export default function App() {
           const seated = stateRef.current.players[claimedIdx];
           if (!seated || seated.peerId !== parsed.originatorPeerId) return;
           // Forward to the spectator topic so watchers see the play animation.
-          try { mqttClientRef.current?.publish(`seep_game_${roomId}_spec`, raw); } catch (e) { console.error('MOVE_ANNOUNCE spec forward error:', e); }
+          try { client.publish(`seep_game_${roomId}_spec`, raw); } catch (e) { console.error('MOVE_ANNOUNCE spec forward error:', e); }
           executeOrchestratedMove(parsed.payload, (p) => {
             dispatch({ type: 'PLAY_MOVE', payload: p });
           });
@@ -475,6 +540,7 @@ export default function App() {
     });
 
     client.on('close', () => {
+      if (!isCurrent()) return;
       console.warn('🟩 HOST: MQTT Connection dropped.');
       setIsDisconnected(true);
     });
@@ -500,6 +566,7 @@ export default function App() {
     // to resume on next visit.
     clientRejoinRef.current = { roomId, name: displayName, myPeerId };
 
+    teardownClient();
     const client = mqtt.connect(MQTT_BROKER, {
       will: {
         topic: `seep_game_${roomId}`,
@@ -509,13 +576,25 @@ export default function App() {
       }
     });
     mqttClientRef.current = client;
+    const isCurrent = () => mqttClientRef.current === client;
 
     // Tracks the role the host assigns us. Until the handshake completes we
     // ignore any state messages — that's the fix for the rendering hole where
     // an unconfirmed peer would render as the default `myIndex = 0` (host).
     let confirmedRole: 'player' | 'spectator' | null = null;
 
+    // Which host session we're following. Room codes get reused (resume keeps
+    // the old code, and the code space is small on a shared public broker), so
+    // more than one host can legitimately be publishing to this topic: a stale
+    // tab that just woke up, or an unrelated game that drew the same code. We
+    // follow one boot at a time and only switch to a host that booted later,
+    // which is what stops an old snapshot from rewinding the table.
+    let hostBootId: string | null = null;
+    let hostBootTs = 0;
+    let lastSyncSeq = 0;
+
     client.on('connect', () => {
+      if (!isCurrent()) return;
       console.log('🟦 CLIENT: Connection fully OPEN to Cloud Room:', roomId);
       setIsDisconnected(false);
 
@@ -534,6 +613,7 @@ export default function App() {
     });
 
     client.on('message', (topic, message) => {
+      if (!isCurrent()) return;
       try {
         const data = JSON.parse(message.toString());
 
@@ -573,6 +653,22 @@ export default function App() {
         if (!confirmedRole) return;
 
         if (data.type === 'SYNC_STATE') {
+          // Unstamped snapshots come from a build that predates host identity —
+          // treat them as untrusted rather than letting them overwrite the table.
+          if (typeof data.hostBootId !== 'string' || !data.hostBootId
+              || typeof data.hostBootTs !== 'number' || typeof data.seq !== 'number') return;
+          if (hostBootId === null || data.hostBootTs > hostBootTs) {
+            // First host we've heard from, or one that booted more recently —
+            // adopt it and restart sequence tracking.
+            hostBootId = data.hostBootId;
+            hostBootTs = data.hostBootTs;
+            lastSyncSeq = 0;
+          } else if (data.hostBootId !== hostBootId) {
+            return; // an older host session — ignore it entirely
+          }
+          if (data.seq <= lastSyncSeq) return; // stale or replayed snapshot
+          lastSyncSeq = data.seq;
+
           console.log(`🟦 CLIENT RECEIVED DATA: [SYNC_STATE] | Phase: ${data?.payload?.gamePhase || 'N/A'}`);
           const newState = data.payload as GameState;
           if (isOrchestratingRef.current) {
@@ -599,6 +695,7 @@ export default function App() {
     });
 
     client.on('close', () => {
+      if (!isCurrent()) return;
       console.warn('🟦 CLIENT: MQTT Connection dropped.');
       setIsDisconnected(true);
     });

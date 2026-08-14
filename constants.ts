@@ -114,6 +114,13 @@ export const CHAT_MAX_LEN = 200;
 /** Maximum number of chat messages kept in the game state. */
 export const CHAT_MAX_HISTORY = 100;
 
+/**
+ * Trailing debounce before the host writes its session snapshot to
+ * localStorage. Serialising the full game state is a synchronous main-thread
+ * write; delaying it keeps it out of the animation frames.
+ */
+export const SESSION_SAVE_DEBOUNCE_MS = 500;
+
 /** How many characters of a peer ID to show in the UI */
 export const PEER_ID_DISPLAY_LENGTH = 6;
 
