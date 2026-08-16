@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CardComponent } from '../components/CardComponent';
-import { ActionBar, LastMoveBanner, SeepOverlay, colorizeSuits } from '../components/panels';
+import { LastMoveBanner, colorizeSuits } from '@laurelwood/card-class';
+import { ActionBar, SeepOverlay } from '../components/panels';
 import { FeltContent } from '../components/FeltContent';
 import { SharedOverlays } from '../components/SharedOverlays';
 import { useGame } from '../GameContext';

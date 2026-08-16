@@ -1,0 +1,17 @@
+/* Seep's deltas on top of @laurelwood/card-class. Imported after the package
+   stylesheet so these win: same specificity, later wins. */
+
+:root {
+  /* A tighter table than the package default. Seep's side seats hold four
+     cards rather than a fanned hand, and the floor needs the height. */
+  --grid-side:   minmax(80px, 1fr);
+  --grid-top:    minmax(0, auto);
+  --grid-bottom: minmax(0, auto);
+  --hand-scroll-padding: 22px 12px 6px;
+
+  /* Selecting a card here is a commitment rather than a hint, so the lift
+     stays flat at every width and a row of selected cards reads as a group. */
+  --card-lift-sm: -0.5rem;
+}
+
+.m-hand { padding: 16px 14px 6px; }
