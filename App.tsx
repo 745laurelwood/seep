@@ -4,7 +4,7 @@ import mqtt from 'mqtt';
 import { Card, ChatMessage, GameState, House, Player, Spectator, Suit } from './types';
 import { findSumCombinations, getPossibleMoves, canCaptureWithRank, canPerfectlyPartition } from './utils/gameLogic';
 import { sounds } from './utils/sound';
-import { flipTransition } from './utils/flip';
+import { flipTransition } from '@laurelwood/card-class';
 import { loadSession, saveSession, clearSession, SavedSession } from './utils/session';
 import {
   getRankLabel,

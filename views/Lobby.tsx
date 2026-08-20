@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { GameState } from '../types';
 import { SavedSession, clearSession } from '../utils/session';
-import { EMPTY_SLOT_NAME, TEAM_LABELS, TEAM_TEXT_COLORS } from '../constants';
+import {
+  LobbyShell, LobbyPanel, LobbyNotice, ResumeSessionCard, SeatRow, TeamToggle,
+  lobbyInputClass, lobbyInputStyle,
+} from '@laurelwood/card-class';
+import { EMPTY_SLOT_NAME, TEAM_LABELS } from '../constants';
 import { Rulebook } from '../components/Rulebook';
 
 interface LobbyProps {
@@ -28,22 +32,6 @@ interface LobbyProps {
   onLeaveRoom: () => void;
 }
 
-const TEAM_PILL_BG: Record<0 | 1, string> = {
-  0: 'rgba(34, 211, 238, 0.18)',
-  1: 'rgba(244, 63, 94, 0.18)',
-};
-const TEAM_PILL_RING: Record<0 | 1, string> = {
-  0: 'rgba(34, 211, 238, 0.55)',
-  1: 'rgba(244, 63, 94, 0.55)',
-};
-
-const inputCls = "w-full rounded-xl px-4 py-3 text-center focus:outline-none font-display font-semibold text-lg sm:text-xl transition-all";
-const inputStyle: React.CSSProperties = {
-  background: 'var(--bg-1)',
-  border: '1px solid var(--line)',
-  color: 'var(--fg)',
-};
-
 export const Lobby: React.FC<LobbyProps> = ({
   state, isMultiplayer, isHost, peerId, myIndex,
   playerName, setPlayerName,
@@ -56,55 +44,22 @@ export const Lobby: React.FC<LobbyProps> = ({
   const [showRulebook, setShowRulebook] = useState(false);
   if (showRulebook) return <Rulebook onClose={() => setShowRulebook(false)} />;
   return (
-    <div className="min-h-screen min-h-dvh royal-bg flex items-center justify-center relative overflow-hidden px-4 py-6" style={{ color: 'var(--fg)' }}>
+    <LobbyShell>
       {!isMultiplayer ? (
-        <div className="relative z-10 glass-panel p-6 sm:p-8 rounded-2xl max-w-md w-full text-center">
-          <h1 className="text-4xl sm:text-5xl font-display mb-1" style={{ color: 'var(--accent)' }}>Seep</h1>
-          <h2 className="text-xs sm:text-sm mb-7 tracking-[0.22em] uppercase" style={{ color: 'var(--dim)' }}>Laurelwood Edition</h2>
-          {joinError && (
-            <div
-              className="mb-5 p-3 rounded-xl text-left flex items-start gap-3"
-              style={{ background: 'rgba(232,146,154,0.08)', border: '1px solid rgba(232,146,154,0.35)' }}
-            >
-              <p className="text-sm flex-1" style={{ color: 'var(--red)' }}>{joinError}</p>
-              <button
-                onClick={clearJoinError}
-                className="text-xs px-2 py-0.5 rounded-md transition-all"
-                style={{ background: 'rgba(232,146,154,0.12)', color: 'var(--red)', border: '1px solid rgba(232,146,154,0.4)' }}
-              >
-                Dismiss
-              </button>
-            </div>
-          )}
+        <LobbyPanel title="Seep" subtitle="Laurelwood Edition">
+          {joinError && <LobbyNotice message={joinError} onDismiss={clearJoinError} />}
           {savedSession && (
-            <div
-              className="mb-5 p-4 rounded-xl text-left"
-              style={{ background: 'rgba(111,176,255,0.06)', border: '1px solid var(--accent-soft)' }}
-            >
-              <p className="text-sm mb-1" style={{ color: 'var(--accent)' }}>Resume your previous session?</p>
-              <p className="text-xs mb-3 font-mono" style={{ color: 'var(--fg-soft)' }}>
-                {savedSession.role === 'host' ? 'Host' : 'Player'} · Room {savedSession.roomId} · {savedSession.playerName}
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    if (savedSession.role === 'host') onCreateRoom(savedSession);
-                    else onJoinRoom(savedSession);
-                    setSavedSession(null);
-                  }}
-                  className="btn-accent flex-1 py-2 rounded-lg font-semibold text-sm"
-                >
-                  Resume
-                </button>
-                <button
-                  onClick={() => { clearSession(); setSavedSession(null); }}
-                  className="px-4 py-2 rounded-lg text-sm transition-all"
-                  style={{ background: 'var(--bg-2)', color: 'var(--fg-soft)', border: '1px solid var(--line)' }}
-                >
-                  Discard
-                </button>
-              </div>
-            </div>
+            <ResumeSessionCard
+              role={savedSession.role}
+              roomId={savedSession.roomId}
+              playerName={savedSession.playerName}
+              onResume={() => {
+                if (savedSession.role === 'host') onCreateRoom(savedSession);
+                else onJoinRoom(savedSession);
+                setSavedSession(null);
+              }}
+              onDiscard={() => { clearSession(); setSavedSession(null); }}
+            />
           )}
           <div className="space-y-3">
             <input
@@ -113,8 +68,8 @@ export const Lobby: React.FC<LobbyProps> = ({
               value={playerName}
               onChange={e => setPlayerName(e.target.value)}
               maxLength={15}
-              className={inputCls}
-              style={inputStyle}
+              className={lobbyInputClass}
+              style={lobbyInputStyle}
             />
             <div
               className="flex items-stretch gap-2 p-1 rounded-xl select-none"
@@ -165,7 +120,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                 autoCorrect="off"
                 spellCheck={false}
                 className="flex-1 rounded-xl px-4 py-3 text-center focus:outline-none font-semibold transition-all"
-                style={{ ...inputStyle, textTransform: 'uppercase' }}
+                style={{ ...lobbyInputStyle, textTransform: 'uppercase' }}
               />
               <button
                 onClick={() => onJoinRoom()}
@@ -200,9 +155,9 @@ export const Lobby: React.FC<LobbyProps> = ({
               Rulebook
             </button>
           </div>
-        </div>
+        </LobbyPanel>
       ) : (
-        <div className="relative z-10 glass-panel p-6 sm:p-8 rounded-2xl max-w-xl w-full">
+        <LobbyPanel wide>
           <h2 className={`text-2xl sm:text-3xl font-display text-center ${state.allowFragileHouses ? 'mb-2' : 'mb-5'}`} style={{ color: 'var(--accent)' }}>Lobby</h2>
           {state.allowFragileHouses && (
             <div
@@ -228,65 +183,19 @@ export const Lobby: React.FC<LobbyProps> = ({
             {state.players.map((p, i) => {
               const isEmpty = p.name === EMPTY_SLOT_NAME;
               const isMe = i === myIndex;
-              const showTeamPicker = !isEmpty && p.isHuman;
               return (
-                <div
+                <SeatRow
                   key={i}
-                  className="p-3 rounded-xl flex items-center justify-between gap-2"
-                  style={{ background: 'var(--bg-1)', border: '1px solid var(--line)' }}
+                  seatNumber={i + 1}
+                  name={p.name}
+                  isEmpty={isEmpty}
+                  isMe={isMe}
+                  isBot={!p.isHuman}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center font-display text-sm shrink-0"
-                      style={{
-                        background: isEmpty ? 'var(--bg-2)' : 'var(--accent)',
-                        color: isEmpty ? 'var(--dim)' : '#06121f',
-                      }}
-                    >
-                      {i + 1}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="truncate text-sm" style={{ color: isEmpty ? 'var(--dim)' : 'var(--fg)', fontStyle: isEmpty ? 'italic' : 'normal' }}>
-                        {p.name}
-                        {isMe && !isEmpty && <span className="ml-1 text-[10px]" style={{ color: 'var(--dim)' }}>(you)</span>}
-                      </div>
-                      {!p.isHuman && !isEmpty && (
-                        <div className="text-[10px] mt-0.5" style={{ color: 'var(--accent)' }}>Bot</div>
-                      )}
-                    </div>
-                  </div>
-                  {showTeamPicker && (
-                    <div
-                      className="flex items-stretch p-0.5 rounded-full shrink-0"
-                      style={{ background: 'var(--bg-2)', border: '1px solid var(--line)' }}
-                    >
-                      {([0, 1] as const).map(t => {
-                        const active = p.team === t;
-                        const interactive = isMe;
-                        return (
-                          <button
-                            key={t}
-                            type="button"
-                            disabled={!interactive || active}
-                            onClick={() => onSetTeam(i, t)}
-                            aria-pressed={active}
-                            title={interactive ? `Switch to Team ${TEAM_LABELS[t]}` : `Team ${TEAM_LABELS[t]}`}
-                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wider transition-all ${active ? TEAM_TEXT_COLORS[t] : ''}`}
-                            style={{
-                              background: active ? TEAM_PILL_BG[t] : 'transparent',
-                              boxShadow: active ? `inset 0 0 0 1px ${TEAM_PILL_RING[t]}` : 'none',
-                              color: active ? undefined : 'var(--dim)',
-                              cursor: !interactive ? 'default' : (active ? 'default' : 'pointer'),
-                              opacity: !interactive && !active ? 0.55 : 1,
-                            }}
-                          >
-                            {TEAM_LABELS[t]}
-                          </button>
-                        );
-                      })}
-                    </div>
+                  {!isEmpty && p.isHuman && (
+                    <TeamToggle team={p.team} interactive={isMe} onPick={t => onSetTeam(i, t)} />
                   )}
-                </div>
+                </SeatRow>
               );
             })}
           </div>
@@ -332,8 +241,8 @@ export const Lobby: React.FC<LobbyProps> = ({
           >
             Leave
           </button>
-        </div>
+        </LobbyPanel>
       )}
-    </div>
+    </LobbyShell>
   );
 };

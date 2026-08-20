@@ -1,15 +1,10 @@
-export enum Suit {
-  Spades = 'S',
-  Hearts = 'H',
-  Clubs = 'C',
-  Diamonds = 'D',
-}
+// The card vocabulary is shared across every game in the org, so it lives in
+// the skin package. Re-exported here so the rest of this codebase keeps
+// importing its types from one place. In Seep a rank runs 1 (Ace) to 13 (King).
+export { Suit } from '@laurelwood/card-class';
+export type { Card, ChatMessage } from '@laurelwood/card-class';
 
-export interface Card {
-  suit: Suit;
-  rank: number; // 1 (Ace) to 13 (King)
-  id: string; // unique identifier
-}
+import type { Card, ChatMessage, Suit } from '@laurelwood/card-class';
 
 export interface House {
   id: string;
@@ -19,14 +14,6 @@ export interface House {
   isCemented: boolean; // True once the house's cards sum to ≥ 2× its rank.
 }
 
-export interface ChatMessage {
-  id: string;          // unique id: `${ts}-${random}`
-  playerIndex: number; // player's index at send time
-  name: string;        // snapshot of sender's name
-  team: 0 | 1;         // snapshot of sender's team, for tint
-  text: string;        // trimmed, <= CHAT_MAX_LEN chars
-  ts: number;          // Date.now() at send
-}
 
 export interface Player {
   id: number;
